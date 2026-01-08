@@ -5,7 +5,11 @@ description = "Default template for PDM package"
 authors = [
     {name = "Bohdan Agarkov", email = "bogdan122305@gmail.com"},
 ]
-dependencies = []
+dependencies = [
+    "python-telegram-bot>=21.0",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+]
 requires-python = "==3.14.*"
 readme = "README.md"
 license = {text = "MIT"}
@@ -13,3 +17,6 @@ license = {text = "MIT"}
 
 [tool.pdm]
 distribution = false
+
+[tool.pdm.scripts]
+start = "python src/bot.py"
