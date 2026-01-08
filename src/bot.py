@@ -186,10 +186,22 @@ async def health_check(_request):
     return web.Response(text='OK', status=200)
 
 
+async def handle_polling(request):
+    """Handle POST requests to /polling."""
+    try:
+        # Placeholder for handling the POST data
+        # data = await request.json()
+        return web.Response(text='OK', status=200)
+    except Exception as e:
+        logger.error(f"Error handling /polling: {e}")
+        return web.Response(text='Error', status=500)
+
+
 async def start_health_server():
     """Start the health check HTTP server."""
     app = web.Application()
     app.router.add_get('/health', health_check)
+    app.router.add_post('/polling', handle_polling)
 
     runner = web.AppRunner(app)
     await runner.setup()
