@@ -1,10 +1,12 @@
 import os
 import logging
+import asyncio
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from openai import OpenAI
+from aiohttp import web
 
 # Load environment variables
 load_dotenv()
@@ -179,8 +181,28 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error deleting message after button press: {e}")
 
 
-def main():
-    """Start the bot."""
+async def health_check(_request):
+    """Health check endpoint."""
+    return web.Response(text='OK', status=200)
+
+
+async def start_health_server():
+    """Start the health check HTTP server."""
+    app = web.Application()
+    app.router.add_get('/health', health_check)
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    await site.start()
+    logger.info("Health check server started on port 8080")
+
+    # Keep the server running
+    await asyncio.Event().wait()
+
+
+async def start_bot():
+    """Start the Telegram bot."""
     # Create the Application
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
@@ -189,9 +211,24 @@ def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_handler(CallbackQueryHandler(button_callback))
 
-    # Start the bot
+    # Initialize and start the bot
     logger.info("Bot is starting...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
-    
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+
+    # Keep the bot running
+    await asyncio.Event().wait()
+
+
+async def main():
+    """Start both the bot and health check server."""
+    # Run both the bot and health server concurrently
+    await asyncio.gather(
+        start_bot(),
+        start_health_server()
+    )
+
+
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

@@ -15,5 +15,3 @@ OPENAI_API_KEY=<key>
 TELEGRAM_BOT_TOKEN=<key>
 
 actual values are in .env
-
-This project uses pdm
