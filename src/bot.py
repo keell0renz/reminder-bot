@@ -193,9 +193,9 @@ async def start_health_server():
 
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    site = web.TCPSite(runner, '0.0.0.0', 10000)
     await site.start()
-    logger.info("Health check server started on port 8080")
+    logger.info("Health check server started on port 10000")
 
     # Keep the server running
     await asyncio.Event().wait()
